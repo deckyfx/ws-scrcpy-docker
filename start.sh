@@ -1,0 +1,1 @@
+node dist/index.js && node ./dist/ws-scrcpy/index.js

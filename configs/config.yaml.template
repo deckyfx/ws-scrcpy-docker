@@ -1,0 +1,12 @@
+runGoogTracker: true
+runApplTracker: true;
+
+server:
+  - secure: false
+    port: {$WS_SCRCPY_PORT}
+
+remoteHostList:
+  - useProxy: true
+    type: android
+    secure: false
+    port: {$WS_SCRCPY_PORT}

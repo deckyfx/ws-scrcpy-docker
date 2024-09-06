@@ -1,31 +1,57 @@
-# Requirement
+# Web Service SCRCPY Dockerized
+
+## ws-scrcpy-docker
+
+## Requirement
+
 - nvm
 - nodejs v20.16.0
 - yarn
 - docker
 
-# Cloning
-```git clone https://github.com/deckyfx/learn-docker.git```
+## Cloning
 
-or
+`git clone https://github.com/deckyfx/ws-scrcpy-docker.git`
+or `git clone git@github.com:deckyfx/ws-scrcpy-docker.git`
 
-```git clone git@github.com:deckyfx/learn-docker.git```
+then enter it's directory
 
-# Run development docker
-```docker compose -f docker-compose.dev.yml up```
+`cd ws-scrcpy-docker`
 
-# watch changes
-```docker compose -f docker-compose.dev.yml --build```
+Make sure nvm is installed, and install node version `20.16.0`, visit [https://github.com/nvm-sh/nvm](https://github.com/nvm-sh/nvm) for more detail
 
-# Detach mode don't watch changes
-```docker compose -f docker-compose.dev.yml --build -d```
+Set node version
 
-# Get all docker running
-```docker ps```
+`nvm use`
 
-# Enter docker shell
-```docker exec -it <name> sh```
+Check node version
 
-# Run docker
-```docker compose up```
+`node --version`
 
+it should return
+
+`v20.16.0`
+
+Make sure yarn is installed, if not use
+
+`npm install --global yarn`
+
+Run Setup
+
+`./setup.sh`
+
+Run it with
+
+`WS_SCRCPY_CONFIG=./configs/config.yaml node dist/index.js && node ./dist/ws-scrcpy/index.js`
+
+## Start Container
+
+`WS_SCRCPY_PORT=3000 docker-compose up`
+
+## Connect
+For now connecting is manual proccess
+1. enter container shell `docker exec -it ws-scrcpy-docker-service-1 sh`
+2. pair the device `adb pair <ip>:<port>`
+3. connect the device `adb connect <ip>:<port>`
+
+later i will make the UI interface to do this via the web

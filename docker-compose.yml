@@ -1,14 +1,17 @@
-version: '3.9'
-
 services:
-  api:
-    build: 
-      context: .
-      target: development
+  service:
+    image: ws-scrcpy-docker:1.0.0
+    # To build
+    #build:
+    #  context: .
+    #  target: production
+    environment:
+      - WS_SCRCPY_PORT=3000
+      # Don't change this
+      - WS_SCRCPY_CONFIG=./configs/config.yaml
     volumes:
-      - ./:/usr/src/app
-      - /usr/src/app/node_modules
+      - /home/decky/Documents/works/ws-scrcpy-docker/platform-tools:/usr/local/bin/platform-tools
     ports:
-      # Map local port to application port
-      - 5005:5005
-    command: yarn dev
+      - "$WS_SCRCPY_PORT:$WS_SCRCPY_PORT"
+      # ADB, don't change this
+      - "5037:5037"

@@ -1,33 +1,63 @@
 # Use an official Node.js runtime as a parent image
 
-# Stage 1: build
-FROM node:20.16.0-alpine3.20 as development
-
-WORKDIR /usr/src/app
-
-COPY yarn.lock package.json ./
-
-RUN yarn install
-
-COPY . .
-
-RUN yarn build
-
-# Stage 2: Get result from stage 1 and run
 FROM node:20.16.0-alpine3.20 as production
 
-ARG NODE_ENV=production
-ENV NODE_ENV={$NODE_ENV}
-
+# Set Working Directory
 WORKDIR /usr/src/app
 
+# Copy main project to container
 COPY yarn.lock package.json ./
 
-# Only install actual dependecies, skipping devDependencies 
-RUN yarn install --only=production
+# Install yarn
+RUN apk add --no-cache yarn
 
-# Copy dist files from stage 1
-COPY --from=development /usr/src/app/dist ./dist
+# Install Git
+RUN apk add git
+
+# Install ws-scrcpy make dependencies
+RUN apk add --no-cache --virtual .build-deps alpine-sdk python3
+
+# Install adb
+RUN apk --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/testing/ add android-tools
+
+# Clone ws-scrcpy
+RUN git clone https://github.com/NetrisTV/ws-scrcpy.git ws-scrcpy
+
+# Enter ws-scrcpy
+WORKDIR /usr/src/app/ws-scrcpy
+
+# Remove the annoying warning
+RUN rm ./package-lock.json
+
+# Install ws-scrcpy dependencies
+RUN yarn install --silent 2>&1
+
+# Build ws-scrcpy
+RUN yarn dist
+
+# Return back to main directory
+WORKDIR /usr/src/app
+
+# Create Dist directory
+RUN mkdir -p ./dist/ws-scrcpy
+
+# Move dist to parent dist
+RUN mv ./ws-scrcpy/dist/* ./dist/ws-scrcpy/
+
+# Install main dependencies
+RUN yarn install --silent 2>&1
+
+# Copy all files to container
+COPY tsconfig.json .
+COPY src ./src/
+COPY configs ./configs
+COPY ./start.sh .
+
+# Build main project
+RUN yarn build
+
+# Add the path to the binary to the PATH environment variable
+ENV PATH=/usr/local/bin/platform-tools:$PATH
 
 # Run the program
-CMD ["node", "dist/index.js"]
+CMD ["sh", "start.sh"]
