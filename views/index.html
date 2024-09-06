@@ -44,7 +44,12 @@
         <div class="form">IP <input type="text" name="ip" /></div>
         <div class="form">Port <input type="number" name="port" /></div>
         <div class="form">
-          <button hx-post="connect" name="connect" hx-swap="none">
+          <button
+            hx-post="connect"
+            name="connect"
+            hx-swap="none"
+            hx-on::after-request="document.getElementById('ifrm').contentWindow.location.reload();"
+          >
             Connect
           </button>
         </div>
