@@ -51,6 +51,7 @@ RUN yarn install --silent 2>&1
 COPY tsconfig.json .
 COPY src ./src/
 COPY configs ./configs
+COPY views ./views
 COPY ./start.sh .
 
 # Build main project
@@ -58,6 +59,8 @@ RUN yarn build
 
 # Add the path to the binary to the PATH environment variable
 ENV PATH=/usr/local/bin/platform-tools:$PATH
+
+RUN which adb
 
 # Run the program
 CMD ["sh", "start.sh"]

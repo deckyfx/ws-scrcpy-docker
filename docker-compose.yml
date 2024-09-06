@@ -6,12 +6,14 @@ services:
     #  context: .
     #  target: production
     environment:
-      - WS_SCRCPY_PORT=3000
+      - WS_SCRCPY_PORT=3001
+      - WS_SCRCPY_UI_PORT=3000
       # Don't change this
       - WS_SCRCPY_CONFIG=./configs/config.yaml
     volumes:
       - /home/decky/Documents/works/ws-scrcpy-docker/platform-tools:/usr/local/bin/platform-tools
     ports:
       - "$WS_SCRCPY_PORT:$WS_SCRCPY_PORT"
+      - "$WS_SCRCPY_UI_PORT:$WS_SCRCPY_UI_PORT"
       # ADB, don't change this
       - "5037:5037"

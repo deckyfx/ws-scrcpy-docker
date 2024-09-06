@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="description" content="Webpage description goes here" />
+    <meta charset="utf-8" />
+    <title>WS SCRCPY</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="Decky Fx" />
+    <style>
+      body,
+      html {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .first-row {
+        display: flex;
+        margin: 5px 20px;
+      }
+      .form {
+        margin: 0px 5px;
+      }
+      .second-row {
+        flex-grow: 1;
+        border: none;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+  </head>
+
+  <body>
+    <div id="container" class="container">
+      <form class="first-row">
+        <div class="form">IP <input type="text" name="ip" /></div>
+        <div class="form">Port <input type="number" name="port" /></div>
+        <div class="form">
+          <button hx-post="connect" name="connect" hx-swap="none">
+            Connect
+          </button>
+        </div>
+        <div class="form">
+          Pair Port <input type="text" type="number" name="pair_port" />
+        </div>
+        <div class="form">
+          Pair Code <input type="text" type="number" name="pair_code" />
+        </div>
+        <div class="form">
+          <button hx-post="pair" name="pair" hx-swap="none">Pair</button>
+        </div>
+      </form>
+    </div>
+    <script>
+      const url = new URL(window.location.href);
+      const new_port = 3001;
+      const target_url = `${url.protocol}//${url.hostname}:${new_port}`;
+
+      var ifrm = document.createElement("iframe");
+      ifrm.setAttribute("id", "ifrm"); // assign an id
+      document.getElementById("container").appendChild(ifrm);
+      // assign url
+      ifrm.setAttribute("src", target_url);
+      ifrm.setAttribute("class", "second-row");
+    </script>
+  </body>
+</html>
