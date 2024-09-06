@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Install this dependencies
 yarn install
 

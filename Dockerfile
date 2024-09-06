@@ -63,4 +63,4 @@ ENV PATH=/usr/local/bin/platform-tools:$PATH
 RUN which adb
 
 # Run the program
-CMD ["sh", "start.sh"]
+CMD ["sh", "./start.sh"]

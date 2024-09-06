@@ -46,7 +46,7 @@ Run it with
 
 ## Start Container
 
-`WS_SCRCPY_PORT=3000 docker-compose up`
+`WS_SCRCPY_PORT=3000 WS_SCRCPY_UI_PORT=3001 docker-compose up`
 
 ## Connect
 For now connecting is manual proccess
