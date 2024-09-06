@@ -1,18 +1,23 @@
+# Requirement
+- nvm
+- nodejs v20.16.0
+- docker
+
 # Run development docker
-docker compose -f docker-compose.dev.yml up
+```docker compose -f docker-compose.dev.yml up```
 
 # watch changes
-docker compose -f docker-compose.dev.yml --build
+```docker compose -f docker-compose.dev.yml --build```
 
 # Detach mode don't watch changes
-docker compose -f docker-compose.dev.yml --build -d
+```docker compose -f docker-compose.dev.yml --build -d```
 
 # Get all docker running
-docker ps
+```docker ps```
 
 # Enter docker shell
-docker exec -it <name> sh
+```docker exec -it <name> sh```
 
 # Run docker
-docker compose up
+```docker compose up```
 
