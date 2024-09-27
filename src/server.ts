@@ -1,131 +1,81 @@
-import { createServer, IncomingMessage, ServerResponse } from "node:http";
-import fs from "node:fs";
-import qs from "querystring";
-import { exec } from "child_process";
+import { server, get, post, file, text } from "@decky.fx/node-server";
 
-type POSTConnectPayoad = {
+import * as cp from "node:child_process";
+
+import util from "node:util";
+
+const hostname = "0.0.0.0";
+const port = 3000;
+
+const exec = util.promisify(cp.exec);
+
+type Payload = {
   ip: string;
   port: string;
-};
-
-type POSTPairPayoad = {
-  ip: string;
   pair_port: string;
   pair_code: string;
 };
 
-const hostname = "0.0.0.0";
-const port = process.env.WS_SCRCPY_UI_PORT
-  ? Number(process.env.WS_SCRCPY_UI_PORT)
-  : 3000;
+get("/", async (_, res, __) => {
+  res.end(file("./views/index.html"));
+  return true;
+});
 
-const sendOK = (res: ServerResponse<IncomingMessage>) => {
-  res.statusCode = 200;
-  res.setHeader("Content-Type", "text/plain");
-  res.end("OK");
-};
+post("/connect", async (_, res, data) => {
+  const body = data.body as Payload | undefined;
 
-const sendNotOK = (res: ServerResponse<IncomingMessage>, message?: string) => {
-  res.statusCode = 200;
-  res.setHeader("Content-Type", "text/plain");
-  res.end(message || "Not OK");
-};
-
-const sendNotFound = (res: ServerResponse<IncomingMessage>) => {
-  res.statusCode = 404;
-  res.setHeader("Content-Type", "text/plain");
-  res.end("Not Found");
-};
-
-const sendIndex = (res: ServerResponse<IncomingMessage>, html: string) => {
-  res.statusCode = 200;
-  res.setHeader("Content-Type", "text/html");
-  res.write(html.toString());
-  res.end();
-};
-
-fs.readFile("./views/index.html", function (err, html) {
-  if (err) {
-    throw err;
+  if (!body || !body.ip || !body.port) {
+    text(res, "missing arguments");
+    return;
   }
-  const server = createServer((req, res) => {
-    if (req.method !== "POST") {
-      sendIndex(res, html.toString());
+
+  const error = await runAdb(`adb connect ${body.ip}:${body.port}`);
+  if (error) {
+    text(res, error);
+    return;
+  }
+  text(res, "OK");
+  return;
+});
+
+post("/pair", async (_, res, data) => {
+  const body = data.body as Payload | undefined;
+
+  if (!body || !body.ip || !body.pair_port || !body.pair_code) {
+    text(res, "missing arguments");
+    return;
+  }
+
+  const error = await runAdb(
+    `adb pair ${body.ip}:${body.pair_port} ${body.pair_code}`
+  );
+  if (error) {
+    text(res, error);
+    return;
+  }
+  text(res, "OK");
+  return;
+});
+
+server.listen(port, hostname, () => {
+  console.log(`Server running at http://${hostname}:${port}/`);
+});
+
+async function runAdb(command: string) {
+  return new Promise<string>(async (resolve) => {
+    try {
+      const { stdout } = await exec(command);
+      if (stdout.includes("failed")) {
+        console.log(`stdout: ${stdout}`);
+        resolve(stdout);
+        return;
+      }
+      resolve("");
+      return;
+    } catch (error: any) {
+      console.error(`Error: ${error}`);
+      resolve(error.message);
       return;
     }
-
-    let body = "";
-
-    req.on("data", (data) => {
-      body += data;
-      // Too much POST data, kill the connection!
-      // 1e6 === 1 * Math.pow(10, 6) === 1 * 1000000 ~~~ 1MB
-      if (body.length > 1e6) req.connection.destroy();
-    });
-
-    req.on("end", () => {
-      const post = qs.parse(body);
-
-      switch (req.url) {
-        case "/connect": {
-          const data = post as POSTConnectPayoad;
-          if (!data.ip || !data.port) {
-            sendNotOK(res, "missing arguments");
-            return;
-          }
-          exec(
-            `adb connect ${data.ip}:${data.port}`,
-            (error, stdout, stderr) => {
-              if (error) {
-                console.error(`Error: ${error}`);
-                sendNotOK(res, error.message);
-                return;
-              } else {
-                if (stdout.includes("failed")) {
-                  console.log(`stdout: ${stdout}`);
-                  sendNotOK(res, stdout);
-                  return;
-                }
-                sendOK(res);
-                return;
-              }
-            }
-          );
-          return;
-        }
-        case "/pair": {
-          const data = post as POSTPairPayoad;
-          if (!data.ip || !data.pair_port || !data.pair_code) {
-            sendNotOK(res, "missing arguments");
-            return;
-          }
-          exec(
-            `adb pair ${data.ip}:${data.pair_port} ${data.pair_code}`,
-            (error, stdout, stderr) => {
-              if (error) {
-                console.error(`Error: ${error}`);
-                sendNotOK(res, error.message);
-                return;
-              } else {
-                if (stdout.includes("failed")) {
-                  console.log(`stdout: ${stdout}`);
-                  sendNotOK(res, stdout);
-                  return;
-                }
-                sendOK(res);
-                return;
-              }
-            }
-          );
-          return;
-        }
-      }
-
-      sendNotFound(res);
-      return;
-    });
   });
-  server.listen(port, hostname, () => {
-    console.log(`Server running at http://${hostname}:${port}/`);
-  });
-});
+}
